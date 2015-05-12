@@ -52,6 +52,8 @@ public class ModbusSerialTransaction implements ModbusTransaction {
 	private int m_TransDelayMS = Modbus.DEFAULT_TRANSMIT_DELAY;
 	private SerialConnection m_SerialCon;
 
+    private int serialInputTimeout = -1;
+
 	private Mutex m_TransactionLock = new Mutex();
 
 	/**
@@ -96,6 +98,14 @@ public class ModbusSerialTransaction implements ModbusTransaction {
 	public void setSerialConnection(SerialConnection con) {
 		m_SerialCon = con;
 		m_IO = con.getModbusTransport();
+
+        if(m_IO != null) {
+            if(m_IO instanceof ModbusSerialTransport) {
+                if(serialInputTimeout >= 0) {
+                    ((ModbusSerialTransport) m_IO).setReceiveTimeout(serialInputTimeout);
+                }
+            }
+        }
 	}// setConnection
 
 	public int getTransactionID() {
@@ -130,6 +140,16 @@ public class ModbusSerialTransaction implements ModbusTransaction {
 		m_Retries = num;
 	}// setRetries
 
+    public void setSerialInputTimeout(int timeout) {
+
+        serialInputTimeout = timeout;
+
+        if(m_IO != null) {
+            if(m_IO instanceof ModbusSerialTransport) {
+                ((ModbusSerialTransport) m_IO).setReceiveTimeout(timeout);
+            }
+        }
+    }
 	/**
 	 * Get the TransDelayMS value.
 	 * 
